@@ -10,28 +10,34 @@ public class MyBot : IChessBot
         // Evaluation function
 
         Move[] moves = board.GetLegalMoves();
-
         Move bestMove = Move.NullMove;
+        bool isWhite = board.IsWhiteToMove;
         float? bestScore = null;
         foreach (Move legalMove in moves)
         {
-            float score = RecursiveSearch(board, 3);
+            board.MakeMove(legalMove);
+            float score = (isWhite ? 1 : -1) * RecursiveSearch(board, 3);
             if (bestScore == null || score > bestScore)
             {
                 bestMove = legalMove;
                 bestScore = score;
             }
+            board.UndoMove(legalMove);
         }
-
-        // check all moves, see if we capture?
-        // if we can capture, then we should see if the net trade is positive?
-
         return bestMove;
     }
 
     public float RecursiveSearch(Board board, int depth)
     {
-        if (depth == 0) return Evaluate(board);
+        if (board.IsInCheckmate())
+        {
+            System.Console.Write("Found checkmate!");
+            return (board.IsWhiteToMove ? 1 : -1) * 1000;
+        }
+        if (depth == 0)
+        {
+            return Evaluate(board);
+        }
         float max = float.MinValue;
         foreach (Move legalMove in board.GetLegalMoves())
         {
@@ -50,13 +56,14 @@ public class MyBot : IChessBot
     public float Evaluate(Board board)
     {
         PieceList[] pieceList = board.GetAllPieceLists();
-                
+
         return
-            ((float) 200 * (pieceList[5].Count - pieceList[11].Count) +
+            ((float)200 * (pieceList[5].Count - pieceList[11].Count) +
             9 * (pieceList[4].Count - pieceList[10].Count) +
             5 * (pieceList[3].Count - pieceList[9].Count) +
             3 * (pieceList[2].Count + pieceList[1].Count - pieceList[8].Count - pieceList[7].Count) +
-            pieceList[1].Count - pieceList[6].Count) + ((float)(0.5 * (getNumBadPawns(board,true) - getNumBadPawns(board,false))));
+            pieceList[0].Count - pieceList[6].Count) +
+            ((float)(0.5 * (getNumBadPawns(board,true) - getNumBadPawns(board,false))));
     }
 
     public int getNumBadPawns(Board board, bool isWhite)
