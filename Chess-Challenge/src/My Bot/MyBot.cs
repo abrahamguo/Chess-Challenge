@@ -1,6 +1,5 @@
 ﻿using ChessChallenge.API;
 using System.Collections.Generic;
-
 public class MyBot : IChessBot
 {
     public Move Think(Board board, Timer timer)
@@ -31,7 +30,6 @@ public class MyBot : IChessBot
     {
         if (board.IsInCheckmate())
         {
-            System.Console.Write("Found checkmate!");
             return (board.IsWhiteToMove ? 1 : -1) * 1000;
         }
         if (depth == 0)
@@ -62,8 +60,8 @@ public class MyBot : IChessBot
             9 * (pieceList[4].Count - pieceList[10].Count) +
             5 * (pieceList[3].Count - pieceList[9].Count) +
             3 * (pieceList[2].Count + pieceList[1].Count - pieceList[8].Count - pieceList[7].Count) +
-            pieceList[0].Count - pieceList[6].Count) +
-            ((float)(0.5 * (getNumBadPawns(board,true) - getNumBadPawns(board,false))));
+            pieceList[0].Count - pieceList[6].Count -
+            ((float)(0.5 * (getNumBadPawns(board,true) - getNumBadPawns(board,false))))) * (board.IsWhiteToMove ? 1 : -1);
     }
 
     public int getNumBadPawns(Board board, bool isWhite)
