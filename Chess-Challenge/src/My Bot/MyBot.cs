@@ -16,9 +16,9 @@ public class MyBot : IChessBot
         foreach (Move legalMove in moves)
         {
             board.MakeMove(legalMove);
-            float score = (isWhite ? 1 : -1) * RecursiveSearch(board, 3);
+            float score = -RecursiveSearch(board, 3);
             System.Console.WriteLine(
-                ChessChallenge.Chess.MoveUtility.GetMoveNameSAN( legalMove, board )+ ": " + score
+                legalMove.MovePieceType.ToString() + " => " + legalMove.TargetSquare.Name + ": " + score
             );
             if (bestScore == null || score > bestScore)
             {
@@ -34,10 +34,9 @@ public class MyBot : IChessBot
     private HashSet<ulong> visited;
     public float RecursiveSearch(Board board, int depth)
     {
-        //
-        if (visited.Contains(board.ZobristKey) || board.IsInCheckmate())
+        if (/*visited.Contains(board.ZobristKey) || */board.IsInCheckmate())
         {
-            return (board.IsWhiteToMove ? 1 : -1) * 1000;
+            return (board.IsWhiteToMove ? -1 : 1) * 1000;
         }
         else visited.Add(board.ZobristKey);
 
