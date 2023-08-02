@@ -12,10 +12,14 @@ public class MyBot : IChessBot
         Move bestMove = Move.NullMove;
         bool isWhite = board.IsWhiteToMove;
         float? bestScore = null;
+        visited = new HashSet<ulong>();
         foreach (Move legalMove in moves)
         {
             board.MakeMove(legalMove);
             float score = (isWhite ? 1 : -1) * RecursiveSearch(board, 3);
+            System.Console.WriteLine(
+                ChessChallenge.Chess.MoveUtility.GetMoveNameSAN( legalMove, board )+ ": " + score
+            );
             if (bestScore == null || score > bestScore)
             {
                 bestMove = legalMove;
@@ -26,16 +30,19 @@ public class MyBot : IChessBot
         return bestMove;
     }
 
+
+    private HashSet<ulong> visited;
     public float RecursiveSearch(Board board, int depth)
     {
-        if (board.IsInCheckmate())
+        //
+        if (visited.Contains(board.ZobristKey) || board.IsInCheckmate())
         {
             return (board.IsWhiteToMove ? 1 : -1) * 1000;
         }
-        if (depth == 0)
-        {
-            return Evaluate(board);
-        }
+        else visited.Add(board.ZobristKey);
+
+        if (depth == 0) return Evaluate(board);
+
         float max = float.MinValue;
         foreach (Move legalMove in board.GetLegalMoves())
         {
@@ -79,7 +86,10 @@ public class MyBot : IChessBot
             bool isBlocked = true;
             for (int i = -1; i <= 1; i++)
             {
-                bool enemyBitboardIsSet = BitboardHelper.SquareIsSet(enemyBitboard, new Square(pawn.Square.File + i, pawn.Square.Rank + (isWhite ? 1 : -1)));
+                bool enemyBitboardIsSet = BitboardHelper.SquareIsSet(
+                    enemyBitboard,
+                    new Square(pawn.Square.File + i, pawn.Square.Rank + (isWhite ? 1 : -1))
+                );
                 if (
                     pawn.Square.File + i >= 0 &&
                     pawn.Square.File + i <= 7 &&
