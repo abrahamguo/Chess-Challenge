@@ -9,21 +9,26 @@ public class MyBot : IChessBot
         // Evaluation function
 
         Move[] moves = board.GetLegalMoves();
-        Move bestMove = Move.NullMove;
-        bool isWhite = board.IsWhiteToMove;
+        Move bestMove = moves[0];
         float? bestScore = null;
         visited = new HashSet<ulong>();
+        System.Console.WriteLine(
+        );
         foreach (Move legalMove in moves)
         {
             board.MakeMove(legalMove);
-            float score = -RecursiveSearch(board, 3);
-            System.Console.WriteLine(
-                legalMove.MovePieceType.ToString() + " => " + legalMove.TargetSquare.Name + ": " + score
-            );
-            if (bestScore == null || score > bestScore)
+            float? result = RecursiveSearch(board, 4);
+            if (result.HasValue)
             {
-                bestMove = legalMove;
-                bestScore = score;
+                float score = (board.IsWhiteToMove ? -1 : 1) * (float)result;
+                System.Console.WriteLine(
+                    legalMove.MovePieceType.ToString() + " => " + legalMove.TargetSquare.Name + ": " + score
+                );
+                if (bestScore == null || score > bestScore)
+                {
+                    bestMove = legalMove;
+                    bestScore = score;
+                }
             }
             board.UndoMove(legalMove);
         }
@@ -32,24 +37,26 @@ public class MyBot : IChessBot
 
 
     private HashSet<ulong> visited;
-    public float RecursiveSearch(Board board, int depth)
+    public float? RecursiveSearch(Board board, int depth)
     {
-        if (/*visited.Contains(board.ZobristKey) || */board.IsInCheckmate())
-        {
-            return (board.IsWhiteToMove ? -1 : 1) * 1000;
-        }
-        else visited.Add(board.ZobristKey);
+        if (visited.Contains(board.ZobristKey)) return null;
+        if (board.IsInCheckmate()) return (board.IsWhiteToMove ? -1 : 1) * 1000;
+        visited.Add(board.ZobristKey);
 
         if (depth == 0) return Evaluate(board);
 
-        float max = float.MinValue;
+        float? max = null;
         foreach (Move legalMove in board.GetLegalMoves())
         {
             board.MakeMove(legalMove);
-            float score = -RecursiveSearch(board, depth - 1);
-            if (score > max)
+            float? result = RecursiveSearch(board, depth - 1);
+            if (result.HasValue)
             {
-                max = score;
+                float score = (float)-result;
+                if (!max.HasValue || score > max)
+                {
+                    max = score;
+                }
             }
             board.UndoMove(legalMove);
         }
